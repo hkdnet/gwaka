@@ -5,18 +5,30 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	hourReg = regexp.MustCompile(`(\d+) hr`)
 	minReg  = regexp.MustCompile(`(\d+) min`)
 	secReg  = regexp.MustCompile(`(\d+) sec`)
+	layout  = "2006/01/02"
 )
 
 // WakatimeWeeklyLog represents your weekly activitiy.
 type WakatimeWeeklyLog struct {
+	From      time.Time
+	To        time.Time
 	Projects  []WakatimeProjectActivity
 	Languages []WakatimeLanguageActivity
+}
+
+func (l *WakatimeWeeklyLog) FormattedFrom() string {
+	return l.From.Format(layout)
+}
+
+func (l *WakatimeWeeklyLog) FormattedTo() string {
+	return l.From.Format(layout)
 }
 
 // NewWakatimeWeeklyLog is a constuctor.
@@ -26,7 +38,8 @@ func NewWakatimeWeeklyLog() WakatimeWeeklyLog {
 
 func (l *WakatimeWeeklyLog) String() string {
 	buf := []byte{}
-	buf = append(buf, "Projects"...)
+	buf = append(buf, fmt.Sprintf("%s-%s", l.FormattedFrom(), l.FormattedTo())...)
+	buf = append(buf, "\nProjects"...)
 	for _, p := range l.Projects {
 		buf = append(buf, "\n   "...)
 		buf = append(buf, p.String()...)

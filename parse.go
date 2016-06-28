@@ -2,6 +2,7 @@ package gwaka
 
 import (
 	"io/ioutil"
+	"path"
 	"strings"
 	"time"
 )
@@ -25,9 +26,14 @@ func ParseLatestWeek() (WakatimeWeeklyLog, error) {
 	return ReadFromFile(dir + "/" + latest.Name())
 }
 
-func ReadFromFile(path string) (WakatimeWeeklyLog, error) {
+func ReadFromFile(filePath string) (WakatimeWeeklyLog, error) {
 	ret := NewWakatimeWeeklyLog()
-	bf, err := ioutil.ReadFile(path)
+	_, filename := path.Split(filePath)
+	from, to := spanFromFilename(filename)
+
+	ret.From = from
+	ret.To = to
+	bf, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return ret, err
 	}
@@ -39,6 +45,15 @@ func ReadFromFile(path string) (WakatimeWeeklyLog, error) {
 		ret.Languages = append(ret.Languages, WakatimeLanguageActivityFromString(l))
 	}
 	return ret, nil
+}
+
+func spanFromFilename(filename string) (time.Time, time.Time) {
+	rep := strings.Replace(filename, ".log", "", 1)
+	arr := strings.Split(rep, "-")
+	layout := "20060102"
+	from, _ := time.Parse(layout, arr[0])
+	to, _ := time.Parse(layout, arr[1])
+	return from, to
 }
 
 func findProjectLog(lines []string) []string {
