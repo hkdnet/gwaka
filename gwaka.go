@@ -1,12 +1,17 @@
 package gwaka
 
+import "fmt"
+
 type Gwaka struct {
 }
 
-func (g *Gwaka) Parse() WakatimeWeeklyLog {
-	ret, err := ParseLatestWeek()
+func (g *Gwaka) Parse() {
+	ret, err := ParseAll()
 	if err != nil {
 		panic(err)
 	}
-	return ret
+	for _, log := range ret {
+		fmt.Println("-------------------")
+		fmt.Println(log.String())
+	}
 }

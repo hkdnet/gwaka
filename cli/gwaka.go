@@ -10,7 +10,7 @@ import (
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error:\n%s", err)
+			fmt.Fprintf(os.Stderr, "Error:\n%s\n", err)
 			os.Exit(1)
 		}
 	}()
@@ -19,7 +19,6 @@ func main() {
 
 func _main() int {
 	cli := gwaka.Gwaka{}
-	log := cli.Parse()
-	fmt.Println(log.String())
+	cli.Parse()
 	return 0
 }
