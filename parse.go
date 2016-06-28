@@ -3,10 +3,26 @@ package gwaka
 import (
 	"io/ioutil"
 	"strings"
+	"time"
 )
 
-func Parse() (WakatimeWeeklyLog, error) {
-	return ReadFromFile("./src/20160627.log")
+func ParseLatestWeek() (WakatimeWeeklyLog, error) {
+	dir := "./src"
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return WakatimeWeeklyLog{}, err
+	}
+	var maxMod time.Time
+	var maxIdx int
+	for i, f := range files {
+		m := f.ModTime()
+		if m.After(maxMod) {
+			maxMod = m
+			maxIdx = i
+		}
+	}
+	latest := files[maxIdx]
+	return ReadFromFile(dir + "/" + latest.Name())
 }
 
 func ReadFromFile(path string) (WakatimeWeeklyLog, error) {

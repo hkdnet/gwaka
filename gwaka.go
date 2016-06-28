@@ -4,7 +4,7 @@ type Gwaka struct {
 }
 
 func (g *Gwaka) Parse() WakatimeWeeklyLog {
-	ret, err := Parse()
+	ret, err := ParseLatestWeek()
 	if err != nil {
 		panic(err)
 	}
