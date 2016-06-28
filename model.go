@@ -2,12 +2,26 @@ package gwaka
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+var (
+	hourReg = regexp.MustCompile(`(\d+) hr`)
+	minReg  = regexp.MustCompile(`(\d+) min`)
+	secReg  = regexp.MustCompile(`(\d+) sec`)
 )
 
 // WakatimeWeeklyLog represents your weekly activitiy.
 type WakatimeWeeklyLog struct {
-	Projects  []WakatimeProjectLog
-	Languages []WakatimeLanguageLog
+	Projects  []WakatimeProjectActivity
+	Languages []WakatimeLanguageActivity
+}
+
+// NewWakatimeWeeklyLog is a constuctor.
+func NewWakatimeWeeklyLog() WakatimeWeeklyLog {
+	return WakatimeWeeklyLog{Projects: []WakatimeProjectActivity{}, Languages: []WakatimeLanguageActivity{}}
 }
 
 func (l *WakatimeWeeklyLog) String() string {
@@ -25,26 +39,66 @@ func (l *WakatimeWeeklyLog) String() string {
 	return string(buf)
 }
 
-// WakatimeProjectLog represents your activitiy on a project.
-type WakatimeProjectLog struct {
+// WakatimeActivity is a base activitiy.
+type WakatimeActivity struct {
 	Name    string
 	Hours   int
 	Minutes int
 	Seconds int
 }
 
-func (p *WakatimeProjectLog) String() string {
-	return fmt.Sprintf("%20s\t%2d:%2d:%2d", p.Name, p.Hours, p.Minutes, p.Seconds)
+func (a *WakatimeActivity) String() string {
+	return fmt.Sprintf("%20s\t%2d:%2d:%2d", a.Name, a.Hours, a.Minutes, a.Seconds)
 }
 
-// WakatimeLanguageLog represents your activitiy on a language.
-type WakatimeLanguageLog struct {
-	Name    string
-	Hours   int
-	Minutes int
-	Seconds int
+// WakatimeProjectActivity represents your activitiy on a project.
+type WakatimeProjectActivity struct {
+	*WakatimeActivity
 }
 
-func (l *WakatimeLanguageLog) String() string {
+func WakatimeActivityFromString(l string) WakatimeActivity {
+	ret := WakatimeActivity{}
+	arr := strings.Split(l, "\t")
+	ret.Name = arr[0]
+	m := hourReg.FindAllStringSubmatch(l, -1)
+	if len(m) != 0 {
+		i, err := strconv.Atoi(m[0][1])
+		if err == nil {
+			ret.Hours = i
+		}
+	}
+	m = minReg.FindAllStringSubmatch(l, -1)
+	if len(m) != 0 {
+		i, err := strconv.Atoi(m[0][1])
+		if err == nil {
+			ret.Minutes = i
+		}
+	}
+	m = secReg.FindAllStringSubmatch(l, -1)
+	if len(m) != 0 {
+		i, err := strconv.Atoi(m[0][1])
+		if err == nil {
+			ret.Seconds = i
+		}
+	}
+	return ret
+}
+
+func WakatimeProjectActivityFromString(l string) WakatimeProjectActivity {
+	a := WakatimeActivityFromString(l)
+	return WakatimeProjectActivity{WakatimeActivity: &a}
+}
+
+// WakatimeLanguageActivity represents your activitiy on a language.
+type WakatimeLanguageActivity struct {
+	*WakatimeActivity
+}
+
+func WakatimeLanguageActivityFromString(l string) WakatimeLanguageActivity {
+	a := WakatimeActivityFromString(l)
+	return WakatimeLanguageActivity{WakatimeActivity: &a}
+}
+
+func (l *WakatimeLanguageActivity) String() string {
 	return fmt.Sprintf("%20s\t%2d:%2d:%2d", l.Name, l.Hours, l.Minutes, l.Seconds)
 }

@@ -2,8 +2,6 @@ package gwaka
 
 import (
 	"io/ioutil"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
@@ -12,73 +10,17 @@ func Parse() (WakatimeWeeklyLog, error) {
 }
 
 func ReadFromFile(path string) (WakatimeWeeklyLog, error) {
-	ret := WakatimeWeeklyLog{Projects: []WakatimeProjectLog{}, Languages: []WakatimeLanguageLog{}}
+	ret := NewWakatimeWeeklyLog()
 	bf, err := ioutil.ReadFile(path)
 	if err != nil {
 		return ret, err
 	}
 	lines := strings.Split(string(bf), "\n")
-	pl := findProjectLog(lines)
-	ll := findLanguageLog(lines)
-	hourReg := regexp.MustCompile(`(\d+) hr`)
-	minReg := regexp.MustCompile(`(\d+) min`)
-	secReg := regexp.MustCompile(`(\d+) sec`)
-	for _, l := range pl {
-		arr := strings.Split(l, "\t")
-		p := WakatimeProjectLog{}
-		p.Name = arr[0]
-		m := hourReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				p.Hours = i
-			}
-		}
-		m = minReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				p.Minutes = i
-			}
-		}
-
-		m = secReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				p.Seconds = i
-			}
-		}
-		ret.Projects = append(ret.Projects, p)
+	for _, l := range findProjectLog(lines) {
+		ret.Projects = append(ret.Projects, WakatimeProjectActivityFromString(l))
 	}
-
-	for _, l := range ll {
-		arr := strings.Split(l, "\t")
-		la := WakatimeLanguageLog{}
-		la.Name = arr[0]
-		m := hourReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				la.Hours = i
-			}
-		}
-		m = minReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				la.Minutes = i
-			}
-		}
-
-		m = secReg.FindAllStringSubmatch(l, -1)
-		if len(m) != 0 {
-			i, err := strconv.Atoi(m[0][1])
-			if err == nil {
-				la.Seconds = i
-			}
-		}
-		ret.Languages = append(ret.Languages, la)
+	for _, l := range findLanguageLog(lines) {
+		ret.Languages = append(ret.Languages, WakatimeLanguageActivityFromString(l))
 	}
 	return ret, nil
 }
